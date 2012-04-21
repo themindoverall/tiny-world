@@ -2,7 +2,7 @@ import bpy
 import os,subprocess
 
 bl_info = {
-    'name': 'Export TinyGame',
+    'name': 'Export TinyGame Level',
     'author': 'Chris Serino <themindoverall@gmail.com>',
     'version': (0,1),
     'blender': (2, 6, 2),
@@ -16,27 +16,35 @@ bl_info = {
 from bpy_extras.io_utils import ExportHelper
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 
+RESO = 16
+CHUNK = 512
+
 def write_some_data(ctx, filepath):
 	cam = bpy.context.scene.camera
 	rnd = bpy.context.scene.render
 	d = os.path.dirname(filepath)
-	print("Hi world! %s" % filepath)
+	f = os.path.splitext(os.path.basename(filepath))[0]
+
+	rnd.resolution_x = CHUNK
+	rnd.resolution_y = CHUNK
+	cam.data.ortho_scale = CHUNK / RESO
 	
 	for y in range(-1, 1):
 		for x in range(-1, 1):
-			cam.location.x = 16 + x * 32
-			cam.location.y = 16 + y * 32
-			rnd.filepath = os.path.join(d, "render_%dx%d" % (x, y))
+			cam.location.x = RESO + x * CHUNK / RESO
+			cam.location.y = RESO + y * CHUNK / RESO
+			rnd.filepath = os.path.join(d, "%s_%dx%d" % (f, x, y))
 			bpy.ops.render.render(write_still = True)
-			print("Writing image at %dx%d" % (x, y))
+			print("Wrote image at %dx%d" % (x, y))
 
+	for 
 
 	return {'FINISHED'}
 
-class ExportTinyGame(bpy.types.Operator, ExportHelper):
+class ExportTinyLevel(bpy.types.Operator, ExportHelper):
 	"""Export the TinyGame level"""
-	bl_idname = "export.tinygame"
-	bl_label = "Export TinyGame"
+	bl_idname = "export.tinylevel"
+	bl_label = "Export TinyGame Level"
 
 	filename_ext = ".json"
 
@@ -56,11 +64,11 @@ class ExportTinyGame(bpy.types.Operator, ExportHelper):
 #	self.layout.operator(ExportTinyGame.bl_idname, text="Export Tiny Game Operator")
 
 def register():
-	bpy.utils.register_class(ExportTinyGame)
+	bpy.utils.register_class(ExportTinyLevel)
 #	bpy.types.INFO_MT_file_export.append(menu_func_export)
 
 def unregister():
-	bpy.utils.unregister_class(ExportTinyGame)
+	bpy.utils.unregister_class(ExportTinyLevel)
 #	bpy.types.INFO_MT_file_export.remove(menu_func_export)
 
 
@@ -68,4 +76,4 @@ if __name__ == "__main__":
 	register()
 
 	# test call
-	bpy.ops.export.tinygame('INVOKE_DEFAULT')
+	bpy.ops.export.tinylevel('INVOKE_DEFAULT')
