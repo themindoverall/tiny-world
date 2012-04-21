@@ -1,0 +1,14 @@
+!!!
+%html
+	%head
+		%title TinyWorld
+		= stylesheet_link_tag    "application", :media => "all"
+		= javascript_include_tag "application"
+		= csrf_meta_tags
+	%body
+		.navbar.navbar-fixed-top
+			.navbar-inner
+				.container
+					%a.brand{:href => '#' } Tiny World
+		.container
+			= yield
