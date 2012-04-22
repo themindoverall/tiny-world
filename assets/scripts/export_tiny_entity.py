@@ -3,6 +3,7 @@ import os,subprocess
 
 from bpy_extras.io_utils import ExportHelper
 from bpy.props import StringProperty, BoolProperty, EnumProperty
+from math import fabs
 
 RESO = 16
 
@@ -14,7 +15,13 @@ def write_some_data(ctx, filepath):
 	d = os.path.dirname(filepath)
 	print("Hi world! %s" % filepath)
 	aabb = [100000, 100000, -100000, -100000]
+	diff = [0, 0]
 	for v in verts:
+		if fabs(v.co.x) > diff[0]:
+			diff[0] = fabs(v.co.x)
+		if fabs(v.co.y) > diff[1]:
+			diff[1] = fabs(v.co.y)
+
 		if not aabb[0] or aabb[0] > v.co.x:
 			aabb[0] = v.co.x
 		if not aabb[1] or aabb[1] > v.co.y:
@@ -26,11 +33,11 @@ def write_some_data(ctx, filepath):
 
 	bb = [aabb[0], aabb[1], aabb[2] - aabb[0], aabb[3] - aabb[1]]
 	print(bb)
-	rnd.resolution_x = bb[2] * RESO
-	rnd.resolution_y = bb[3] * RESO
-	cam.location.x = obj.location.x + bb[0] + bb[2] * 0.5
-	cam.location.y = obj.location.y + bb[1] + bb[3] * 0.5
-	cam.data.ortho_scale = bb[2]
+	rnd.resolution_x = diff[0] * 2 * RESO
+	rnd.resolution_y = diff[1] * 2 * RESO
+	cam.location.x = obj.location.x
+	cam.location.y = obj.location.y
+	cam.data.ortho_scale = diff[0] * 2
 	rnd.filepath = filepath
 	bpy.ops.object.hide_render_set(unselected = True)
 	bpy.ops.render.render(write_still = True)
@@ -72,4 +79,4 @@ if __name__ == "__main__":
 	register()
 
 	# test call
-	bpy.ops.export.tinyentity('INVOKE_DEFAULT')
+	#bpy.ops.export.tinyentity('INVOKE_DEFAULT')

@@ -1,7 +1,7 @@
 require 'rmagick'
 include Magick
 
-filename = "render"
+filename = "level"
 
 images = Hash.new
 
