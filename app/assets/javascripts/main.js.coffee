@@ -1,4 +1,5 @@
 #= require_tree ./lib
+#= require_tree ./ui
 #= require_tree ./game
 
 Futures = require('futures')
@@ -19,9 +20,16 @@ class TinyGame
 		@ctx = @canvas.getContext('2d')
 		@ctx.translate 400, 250
 
+		@ui = $('canvas#ui').get(0)
+		@ui_ctx = @ui.getContext('2d')
+
+		@dialog = new Game.UI.DialogueBox('<s class="header">SAGELY OWL\n</s>Who is our <s class="idea">champion</s> who will face down the <s class="enemy">Evil Lord Anthem</s>?')
+
 		@content = new Game.ContentManager()
 
 		@content.root = '/assets/'
+
+		@dialog.loadContent(@content)
 
 		@space = new cp.Space();
 
@@ -51,14 +59,22 @@ class TinyGame
 	draw: ->
 		@debug.width = @debug.width
 		@drawDebug(@debug_ctx)
+		@ui.width = @ui.width
+		@drawUI(@ui_ctx)
 		#@debugDraw.m_ctx.translate(400, 250)
 		#@world.DrawDebugData()
+	offset: () ->
+		x: -window.player.body.p.x * Game.PTM_RATIO + @debug.width * 0.5
+		y: -window.player.body.p.y * Game.PTM_RATIO + @debug.height * 0.5
 	point2canvas: (p) =>
-		return v(400 + p.x * Game.PTM_RATIO, 250 + p.y * Game.PTM_RATIO)
+		offset = this.offset()
+		return v(offset.x + p.x * Game.PTM_RATIO, offset.y + p.y * Game.PTM_RATIO)
 	drawDebug: (ctx) =>
 		@space.eachShape (shape) =>
 			ctx.fillStyle = shape.style()
 			shape.draw(ctx, Game.PTM_RATIO, @point2canvas)
+	drawUI: (ctx) ->
+		@dialog.draw({x: 10, y: 10, width: 320, height: 100}, ctx)
 	run: ->
 		loops = 0
 		skipTicks = 1000 / @fps

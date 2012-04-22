@@ -40,10 +40,10 @@ class GroundState extends PlatformerState
 		nowmoving = false
 
 		if @owner.controller.movement < 0
-			preventmoving = @owner.sensors["sr"].result
+			preventmoving = @owner.sensors["sl"].result
 			# owner.setFlipX(false)
 		else if @owner.controller.movement > 0
-			preventmoving = @owner.sensors["sl"].result
+			preventmoving = @owner.sensors["sr"].result
 			# owner.setFlipX(true)
 
 		if preventmoving
