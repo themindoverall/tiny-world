@@ -250,7 +250,7 @@ class WalljumpState extends PlatformerState
 class Game.Player extends Game.GameObject
 	JUMP_BONUS: 0.6
 	RUN_SPEED: 18.0
-	JUMP_SPEED: 55.0
+	JUMP_SPEED: 85.0
 	AIR_SPEED: 75.0
 	AIR_DRAG: 46.0
 	AIR_AGILITY: 105.0
@@ -295,6 +295,7 @@ class Game.Player extends Game.GameObject
 		mjd.maxMotorTorque = 10000000
 		mjd.enableMotor = true
 		mjd.enableLimit = false
+		mjd.collideConnected = false
 		@motor = world.CreateJoint(mjd)
 
 		bodyDef.fixedRotation = true

@@ -10,7 +10,7 @@ b2Vec2 = Box2D.Common.Math.b2Vec2
 b2DebugDraw = Box2D.Dynamics.b2DebugDraw
 
 
-#b2World.m_continuous_physics = false
+b2World.m_continuous_physics = false
 Box2D.Dynamics.b2Body.prototype.ApplyForceToCenter = (force) ->
 	this.ApplyForce(force, this.GetWorldCenter())
 
@@ -35,7 +35,7 @@ class TinyGame
 
 		@content.root = '/assets/'
 
-		@world = new b2World(new b2Vec2(0, 15), true)
+		@world = new b2World(new b2Vec2(0, 49), true)
 
 		@world.SetDebugDraw(@debugDraw)
 
@@ -46,13 +46,14 @@ class TinyGame
 				obj.start()
 			this.run()	
 			console.log("DOING THIS")
-	update: ->
+	update: (delta) ->
+		elapsed = delta * 0.001
 		for obj in @objects
-			obj.update(1/60)
+			obj.update(elapsed)
 
 		#@debugDraw.m_ctx.translate(400, 250)
 		
-		@world.Step(1.0 / 60, 10, 10)
+		@world.Step(elapsed, 3, 8)
 		@world.ClearForces()
 	draw: ->
 		@debug.width = @debug.width
@@ -68,9 +69,10 @@ class TinyGame
 		frames = 1
 		mainloop = () =>
 			now = (new Date).getTime()
+
 			while (now > nextGameTick)
 				delta = now - lastTime
-				@update(delta)
+				this.update(delta)
 				nextGameTick += skipTicks
 				loops++
 				lastTime = now
@@ -83,7 +85,7 @@ class TinyGame
 				lastFrameTime = (new Date).getTime()
 
 			frames++
-			@draw()
+			this.draw()
 		recursiveAnim = () ->
 			mainloop()
 			window.requestAnimFrame(recursiveAnim, @canvas)
