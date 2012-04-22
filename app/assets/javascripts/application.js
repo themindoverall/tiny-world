@@ -19,3 +19,5 @@
 //= require main
 
 window.Game = {}
+
+window.Game.PTM_RATIO = 16

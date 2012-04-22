@@ -11,7 +11,7 @@ def parse_dim(d)
 	end
 end
 
-filename = "render_out_-1x-1=0x0.png"
+filename = "level_out_-1x-1=0x0.png"
 
 file, dims = filename.split('.')[0].split('_out_')
 

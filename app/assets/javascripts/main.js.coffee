@@ -5,14 +5,23 @@ Futures = require('futures')
 
 window.$ = jQuery
 
+b2World = Box2D.Dynamics.b2World
 b2Vec2 = Box2D.Common.Math.b2Vec2
 b2DebugDraw = Box2D.Dynamics.b2DebugDraw
 
+
+#b2World.m_continuous_physics = false
+Box2D.Dynamics.b2Body.prototype.ApplyForceToCenter = (force) ->
+	this.ApplyForce(force, this.GetWorldCenter())
+
 class TinyGame
 	constructor: (@canvas) ->
+		@fps = 60
+
 		@debugDraw = new b2DebugDraw
 
-		@debugDraw.SetSprite($("canvas#debug").get(0).getContext("2d"))
+		@debug = $("canvas#debug").get(0)
+		@debugDraw.SetSprite(@debug.getContext("2d"))
 		@debugDraw.SetDrawScale(16.0)
 		@debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit)
 		@debugDraw.SetFillAlpha(0.5);
@@ -26,7 +35,7 @@ class TinyGame
 
 		@content.root = '/assets/'
 
-		@world = new Box2D.Dynamics.b2World(new b2Vec2(0, 10), true)
+		@world = new b2World(new b2Vec2(0, 15), true)
 
 		@world.SetDebugDraw(@debugDraw)
 
@@ -35,19 +44,50 @@ class TinyGame
 			started = true
 			for obj in @objects
 				obj.start()
-			window.setInterval(@update, 1000 / 15)
+			this.run()	
 			console.log("DOING THIS")
-	update: =>
+	update: ->
 		for obj in @objects
-			obj.update(1/15)
+			obj.update(1/60)
 
 		#@debugDraw.m_ctx.translate(400, 250)
-		debug = $("canvas#debug").get(0)
-		debug.width = debug.width
-		@debugDraw.m_ctx.translate(400, 250)
-		@world.Step(1.0 / 15, 10, 10)
-		@world.DrawDebugData()
+		
+		@world.Step(1.0 / 60, 10, 10)
 		@world.ClearForces()
+	draw: ->
+		@debug.width = @debug.width
+		@debugDraw.m_ctx.translate(400, 250)
+		@world.DrawDebugData()
+	run: ->
+		loops = 0
+		skipTicks = 1000 / @fps
+		maxFrameSkip = 10
+		nextGameTick = (new Date).getTime()
+		lastTime = (new Date).getTime()
+		lastFrameTime = (new Date).getTime()
+		frames = 1
+		mainloop = () =>
+			now = (new Date).getTime()
+			while (now > nextGameTick)
+				delta = now - lastTime
+				@update(delta)
+				nextGameTick += skipTicks
+				loops++
+				lastTime = now
+				now = (new Date).getTime()
+        
+			elapsed = ((new Date).getTime() - lastFrameTime) / 1000
+			if elapsed > 0.5
+				@realfps = frames / elapsed
+				frames = 0
+				lastFrameTime = (new Date).getTime()
+
+			frames++
+			@draw()
+		recursiveAnim = () ->
+			mainloop()
+			window.requestAnimFrame(recursiveAnim, @canvas)
+		recursiveAnim()
 	add: (obj, data) ->
 		obj.initialize(this, data)
 		@objects.push(obj)
