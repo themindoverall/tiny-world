@@ -33,7 +33,7 @@ class Game.MovingPlatform extends Game.Platform
 				verts.push(-dv[1])
 			shape = space.addShape(new cp.PolyShape(@body, verts, v(0, 0)))
 			shape.setFriction(7)
-			shape.layers = 0b11
+			shape.layers = 0b110
 			shape.group = 10
 	update: (elapsed) ->
 		curpath = v.add(@origin, @path[@cur])

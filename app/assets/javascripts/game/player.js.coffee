@@ -75,7 +75,14 @@ class JumpState extends PlatformerState
 	enter: () ->
 		@jumpTimer = @owner.JUMP_BONUS
 		# owner.anim('jump')
+	exit: () ->
+		@owner.bshape.layers |= 0b100
 	execute: (elapsed) ->
+		if @owner.body.vy > 0
+			@owner.bshape.layers |= 0b100
+		else
+			@owner.bshape.layers &= ~0b100
+
 		lv = @owner.body.vx
 		if @owner.controller.movement != 0
 			pow = 0
@@ -120,7 +127,14 @@ class AirState extends PlatformerState
 		@owner.sensors['bl'].enabled = false
 		@owner.sensors['br'].enabled = false
 
+		@owner.bshape.layers |= 0b100
+
 	execute: (elapsed) ->
+		if @owner.body.vy > 0
+			@owner.bshape.layers |= 0b100
+		else
+			@owner.bshape.layers &= ~0b100
+
 		lv = @owner.body.vx
 		if @owner.controller.movement != 0
 			pow = 0
@@ -236,8 +250,14 @@ class WalljumpState extends PlatformerState
 
 		@owner.body.applyImpulse(v(@owner.JUMP_SPEED * @side * -0.5, -@owner.JUMP_SPEED), @owner.center)
 		@jumpTimer = @owner.JUMP_BONUS
-
+	exit: () ->
+		@owner.bshape.layers |= 0b100
 	execute: (elapsed) ->
+		if @owner.body.vy > 0
+			@owner.bshape.layers |= 0b100
+		else
+			@owner.bshape.layers &= ~0b100
+		
 		@jumpTimer -= elapsed
 		if @jumpTimer > 0
 			if @owner.controller.jump != 'up'
@@ -292,10 +312,10 @@ class Game.Player extends Game.GameObject
 
 		console.log('player body is ', @body)
 
-		shape = space.addShape(new cp.CircleShape(@body, bodywidth * 0.5, v(0, 0)))
-		shape.setFriction(7)
-		shape.group = 1
-		shape.layers = 0b1
+		@bshape = space.addShape(new cp.CircleShape(@body, bodywidth * 0.5, v(0, 0)))
+		@bshape.setFriction(7)
+		@bshape.group = 1
+		@bshape.layers = 0b1
 
 		# pivot = space.addBody(new cp.Body(0.0000001, Number.MAX_VALUE))
 
@@ -342,6 +362,7 @@ class Game.Player extends Game.GameObject
 		@center = @body.local2World(v.zero)
 		unless @ignoreGravity
 			@body.applyForce(@graviticForce, @center)
+
 		if @currentState != null
 			@currentState.setupSensors()
 		
