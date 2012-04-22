@@ -13,7 +13,9 @@
 //= require jquery
 //= require jquery_ujs
 //= require bootstrap
-//= require .
+//= require futures.ender
+//= require Box2dWeb
+//= require_self
 //= require main
 
 window.Game = {}

@@ -4,8 +4,27 @@
 	width: 640px;
 	margin: 0 auto;
 	margin-top: 50px;
+	position: relative;
 }
 
-canvas {
+canvas#game {
+	z-index: 0;
 	background-color: #000;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+canvas#debug {
+	z-index: 1;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+canvas#ui {
+	z-index: 2;
+	position: absolute;
+	top: 0;
+	left: 0;
 }
