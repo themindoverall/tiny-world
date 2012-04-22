@@ -14,7 +14,7 @@
 //= require jquery_ujs
 //= require bootstrap
 //= require futures.ender
-//= require Box2dWeb
+//= require cp
 //= require_self
 //= require main
 

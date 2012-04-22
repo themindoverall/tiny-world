@@ -1,20 +1,22 @@
-b2Vec2 = Box2D.Common.Math.b2Vec2
-b2BodyDef = Box2D.Dynamics.b2BodyDef
-b2Body = Box2D.Dynamics.b2Body
-b2FixtureDef = Box2D.Dynamics.b2FixtureDef
-b2Fixture = Box2D.Dynamics.b2Fixture
-b2MassData = Box2D.Collision.Shapes.b2MassData
-b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape
-b2CircleShape = Box2D.Collision.Shapes.b2CircleShape
+v = cp.v
 
 class Game.Mesh extends Game.GameObject
 	initialize: (game, data) ->
 		super(game, data)
 
-		world = game.world
-		console.log('is world null', game)
+		space = game.space
+		
+		for face in data.faces
+			verts = []
+			for vidx in face
+				dv = data.vertices[vidx]
+				verts.push(dv[0])
+				verts.push(-dv[1])
+			shape = space.addShape(new cp.PolyShape(space.staticBody, verts, v(0, 0)))
+			shape.setFriction(7)
+			shape.layers = 0b11
 
-		fixDef = new b2FixtureDef
+		###fixDef = new b2FixtureDef
 		fixDef.density = 1.0
 		fixDef.friction = 0.5
 		fixDef.restitution = 0.2
@@ -36,7 +38,7 @@ class Game.Mesh extends Game.GameObject
 				verts.push(new b2Vec2(dv[0], -dv[1]))
 			fixDef.shape.SetAsArray(verts, 0)
 			@body.CreateFixture(fixDef)
-		@body.ResetMassData();
+		@body.ResetMassData();###
 
 		console.log("body is ", @body)
 

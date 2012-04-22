@@ -5,28 +5,16 @@ Futures = require('futures')
 
 window.$ = jQuery
 
-b2World = Box2D.Dynamics.b2World
-b2Vec2 = Box2D.Common.Math.b2Vec2
-b2DebugDraw = Box2D.Dynamics.b2DebugDraw
-
-
-b2World.m_continuous_physics = false
-Box2D.Dynamics.b2Body.prototype.ApplyForceToCenter = (force) ->
-	this.ApplyForce(force, this.GetWorldCenter())
+v = cp.v
 
 class TinyGame
 	constructor: (@canvas) ->
-		@fps = 60
-
-		@debugDraw = new b2DebugDraw
-
-		@debug = $("canvas#debug").get(0)
-		@debugDraw.SetSprite(@debug.getContext("2d"))
-		@debugDraw.SetDrawScale(16.0)
-		@debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit)
-		@debugDraw.SetFillAlpha(0.5);
+		@fps = 30
 
 		@started = false
+
+		@debug = $('canvas#debug').get(0)
+		@debug_ctx = @debug.getContext('2d')
 
 		@ctx = @canvas.getContext('2d')
 		@ctx.translate 400, 250
@@ -35,10 +23,13 @@ class TinyGame
 
 		@content.root = '/assets/'
 
-		@world = new b2World(new b2Vec2(0, 49), true)
+		@space = new cp.Space();
 
-		@world.SetDebugDraw(@debugDraw)
-
+		@space.iterations = 12
+		@gravity = v(0, 28)
+		@space.sleepTimeThreshold = 0.5
+		
+		@remainder = 0;
 		@objects = []
 		this.loadContent('level.json').when =>
 			started = true
@@ -53,12 +44,21 @@ class TinyGame
 
 		#@debugDraw.m_ctx.translate(400, 250)
 		
-		@world.Step(elapsed, 3, 8)
-		@world.ClearForces()
+		@remainder += elapsed
+		while @remainder > 1/60
+			@remainder -= 1/60
+			@space.step(1/60)
 	draw: ->
 		@debug.width = @debug.width
-		@debugDraw.m_ctx.translate(400, 250)
-		@world.DrawDebugData()
+		@drawDebug(@debug_ctx)
+		#@debugDraw.m_ctx.translate(400, 250)
+		#@world.DrawDebugData()
+	point2canvas: (p) =>
+		return v(400 + p.x * Game.PTM_RATIO, 250 + p.y * Game.PTM_RATIO)
+	drawDebug: (ctx) =>
+		@space.eachShape (shape) =>
+			ctx.fillStyle = shape.style()
+			shape.draw(ctx, Game.PTM_RATIO, @point2canvas)
 	run: ->
 		loops = 0
 		skipTicks = 1000 / @fps

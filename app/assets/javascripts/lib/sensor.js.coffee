@@ -1,3 +1,6 @@
+v = cp.v
+
+i = 0
 class Game.Sensor
 	constructor: (@game, @from, @to) ->
 		@enabled = true
@@ -6,11 +9,11 @@ class Game.Sensor
 			@result = false
 			return
 
-		@fromwp = body.GetWorldPoint(@from)
-		@towp = body.GetWorldPoint(@to)
+		@fromwp = v.add(@from, body.p)
+		@towp = v.add(@to, body.p)
 		@result = false
 
-		@game.world.RayCast(this.collect, @fromwp, @towp)
+		@result = @game.space.segmentQueryFirst(@fromwp, @towp, 0b10)
 	collect: (fixture, point, normal, fraction) =>
 			@touch_point = point
 			@result = true
