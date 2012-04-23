@@ -46,8 +46,18 @@ class TinyGame
 			console.log("DOING THIS")
 	update: (delta) ->
 		elapsed = delta * 0.001
+
+		removers = []
 		for obj in @objects
 			obj.update(elapsed)
+			if obj.dead
+				removers.push(obj)
+
+		if removers.length
+			console.log removers
+		for obj in removers
+			obj.unload()
+			@objects.splice(@objects.indexOf(obj), 1)
 
 		#@debugDraw.m_ctx.translate(400, 250)
 		

@@ -1,4 +1,5 @@
 #= require ./player_controller
+#= require ./player_anim
 
 Futures = require('futures')
 
@@ -33,6 +34,8 @@ class GroundState extends PlatformerState
 		@owner.sensors["bl"].enabled = true
 		@owner.sensors["br"].enabled = true
 		@moving = false
+
+		@owner.setAnim('stand')
 	exit: () ->
 		#@owner.motor.EnableMotor(false)
 		@owner.sensors["bl"].enabled = false
@@ -43,10 +46,10 @@ class GroundState extends PlatformerState
 
 		if @owner.controller.movement < 0
 			preventmoving = @owner.sensors["sl"].result
-			# owner.setFlipX(false)
+			@owner.flipX = true
 		else if @owner.controller.movement > 0
 			preventmoving = @owner.sensors["sr"].result
-			# owner.setFlipX(true)
+			@owner.flipX = false
 
 		if preventmoving
 			if @owner.motor.rate != 0
@@ -57,9 +60,9 @@ class GroundState extends PlatformerState
 			nowmoving = true
 
 		if nowmoving and !@moving
-			this #animation
-		else
-			this #animation
+			@owner.setAnim('walk')
+		else if !nowmoving and @moving
+			@owner.setAnim('stand')
 
 		@moving = nowmoving
 
@@ -76,7 +79,7 @@ class GroundState extends PlatformerState
 class JumpState extends PlatformerState
 	enter: () ->
 		@jumpTimer = @owner.JUMP_BONUS
-		# owner.anim('jump')
+		@owner.setAnim('jump')
 	exit: () ->
 		@owner.bshape.layers |= 0b100
 	execute: (elapsed) ->
@@ -96,9 +99,9 @@ class JumpState extends PlatformerState
 			@owner.body.applyForce(v(pow * @owner.controller.movement, 0), @owner.center)
 
 			if @owner.controller.movement > 0
-				1 # owner.setFlipX(false)
+				@owner.flipX = false
 			else
-				1 #owner.setFlipX(true)
+				@owner.flipX = true
 
 		@jumpTimer -= elapsed
 		
@@ -123,7 +126,7 @@ class AirState extends PlatformerState
 	enter: () ->
 		@owner.sensors['bl'].enabled = true
 		@owner.sensors['br'].enabled = true
-		# animate falling
+		@owner.setAnim('fall')
 
 	exit: () ->
 		@owner.sensors['bl'].enabled = false
@@ -148,9 +151,9 @@ class AirState extends PlatformerState
 			@owner.body.applyForce(v(pow * @owner.controller.movement, 0), @owner.center)
 
 			if @owner.controller.movement > 0
-				1 #owner.setFlipX(false)
+				@owner.flipX = false
 			else
-				1 #owner.setFlipX(true)
+				@owner.flipX = true
 		else if lv != 0
 			lin = lv / Math.abs(lv)
 			@owner.body.applyForce(v(lv * -@owner.AIR_DRAG, 0), @owner.center)
@@ -183,24 +186,22 @@ class WallrideState extends PlatformerState
 		if @owner.controller.movement < 0
 			@owner.sensors['sl'].enabled = true
 			@owner.sensors['sr'].enabled = false
-			#owner.setFlipX(true)
+			@owner.flipX = true
 			@side = -1
 		else
 			@owner.sensors['sl'].enabled = false
 			@owner.sensors['sr'].enabled = true
-			#owner.setFlipX(true)
+			@owner.flipX = false
 			@side = 1
 
-		# anim(wall)
+		@owner.setAnim('wallride')
 
 		@owner.ignoreGravity = true
-		#@owner.body.SetType(b2Body.b2_kinematicBody)
 
 	exit: () ->
 		@owner.sensors['sl'].enabled = false
 		@owner.sensors['sr'].enabled = false
 		@owner.ignoreGravity = false
-		# @owner.body.SetType(b2Body.b2_dynamicBody)
 
 	execute: (elapsed) ->
 		@owner.body.vy = @owner.WALL_SKID
@@ -237,12 +238,12 @@ class WalljumpState extends PlatformerState
 	enter: () ->
 		if @owner.sensors['sl'].result
 			@side = -1
-			#owner.setFlipX(false)
+			@owner.flipX = false
 		else
 			@side = 1
-			#owner.setFlipX(true)
+			@owner.flipX = true
 
-		#animate(jump)
+		@owner.setAnim('jump')
 
 		@owner.body.vx = 0
 		@owner.body.vy = -1
@@ -352,6 +353,10 @@ class Game.Player extends Game.GameObject
 
 		@controller = new Game.PlayerController(game)
 
+		@anim = 'fall'
+		@animTime = 0
+		@flipX = false
+
 		@statetimer = 0
 		@statetimermax = 0.3
 
@@ -360,6 +365,9 @@ class Game.Player extends Game.GameObject
 		future = Futures.future()
 		content.loadImage('viking.png').when (err, img) =>
 			@image = img
+			@sprite = new Game.Sprite(@image)
+			@sprite.autoframe(16, 16)
+			@sprite.setAnimations(Game.PlayerAnims)
 			future.fulfill()
 		future
 	update: (elapsed) ->
@@ -374,7 +382,7 @@ class Game.Player extends Game.GameObject
 		@statetimer += elapsed
 
 		sensorstate = "State: #{@currentStateName}<br />"
-		sensorstate += "Jump: #{@controller.jump}<br />"
+		sensorstate += "Jump: #{@anim}, #{@animTime}<br />"
 		sensorstate += "V: #{@body.vx}, #{@body.vy}<br />"
 		for k, s of @sensors
 			s.sense(@body)
@@ -387,9 +395,18 @@ class Game.Player extends Game.GameObject
 			this.setState(@currentState.execute(elapsed))
 
 		@controller.update(elapsed)
+		@animTime += elapsed
 	draw: (ctx) ->
 		if @image
-			ctx.drawImage(@image, @body.p.x * Game.PTM_RATIO - @image.width * 0.5, @body.p.y * Game.PTM_RATIO - @image.height * 0.5)
+			@sprite.draw(
+				ctx,
+				@anim,
+				@animTime,
+				@body.p.x * Game.PTM_RATIO,
+				@body.p.y * Game.PTM_RATIO,
+				@flipX,
+				false
+			)
 	setState: (statename) ->
 		if statename == null or statename == @currentStateName
 			return
@@ -398,3 +415,6 @@ class Game.Player extends Game.GameObject
 		@currentState = @states[statename]
 		@currentStateName = statename
 		@currentState.enter()
+	setAnim: (anim) ->
+		@anim = anim
+		@animTime = 0
