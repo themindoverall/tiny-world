@@ -19,12 +19,7 @@ class Game.UI.DialogueBox extends Game.UI.Box
   loadContent: (content) ->
     this._loadStyles(content).when =>
       this.setText(@text)
-      @cached = document.createElement('CANVAS')
-      @cached.setAttribute('width', @border.width)
-      @cached.setAttribute('height', @border.height)
-      ctx = @cached.getContext('2d')
       @loaded = true
-      this.drawBox({x: 0, y: 0, width: @border.width, height: @border.height}, ctx)
   draw: (rect, ctx) ->
     if @loaded
       ctx.drawImage(@cached, rect.x, rect.y, @border.width, @border.height)
@@ -76,6 +71,11 @@ class Game.UI.DialogueBox extends Game.UI.Box
   setText: (text) ->
     @text = text
     @compiled = this._compileText(text)
+    @cached = document.createElement('CANVAS')
+    @cached.setAttribute('width', @border.width)
+    @cached.setAttribute('height', @border.height)
+    ctx = @cached.getContext('2d')
+    this.drawBox({x: 0, y: 0, width: @border.width, height: @border.height}, ctx)
   _loadStyles: (content) ->
     join = Futures.join()
     @styles = { }

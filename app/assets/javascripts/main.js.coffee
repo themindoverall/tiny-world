@@ -18,7 +18,6 @@ class TinyGame
 		@debug_ctx = @debug.getContext('2d')
 
 		@ctx = @canvas.getContext('2d')
-		@ctx.translate 400, 250
 
 		@ui = $('canvas#ui').get(0)
 		@ui_ctx = @ui.getContext('2d')
@@ -57,15 +56,23 @@ class TinyGame
 			@remainder -= 1/60
 			@space.step(1/60)
 	draw: ->
+		@canvas.width = @canvas.width
+		this.drawGame(@ctx)
 		@debug.width = @debug.width
-		@drawDebug(@debug_ctx)
+		this.drawDebug(@debug_ctx)
 		@ui.width = @ui.width
-		@drawUI(@ui_ctx)
+		this.drawUI(@ui_ctx)
 		#@debugDraw.m_ctx.translate(400, 250)
 		#@world.DrawDebugData()
 	offset: () ->
-		x: -window.player.body.p.x * Game.PTM_RATIO + @debug.width * 0.5
-		y: -window.player.body.p.y * Game.PTM_RATIO + @debug.height * 0.5
+		x: -window.player.body.p.x * Game.PTM_RATIO + @canvas.width * 0.5
+		y: -window.player.body.p.y * Game.PTM_RATIO + @canvas.height * 0.5
+	drawGame: (ctx) ->
+		offset = this.offset()
+		@ctx.translate offset.x, offset.y
+
+		for obj in @objects
+			obj.draw(ctx)
 	point2canvas: (p) =>
 		offset = this.offset()
 		return v(offset.x + p.x * Game.PTM_RATIO, offset.y + p.y * Game.PTM_RATIO)
@@ -116,15 +123,9 @@ class TinyGame
 	loadContent: (name) ->
 		future = Futures.future()
 		@content.loadData(name).when (err, data) =>
-			bounds = data.bounds
-			h = bounds[3] - bounds[1]
-			for y in [bounds[1]..bounds[3]]
-				for x in [bounds[0]..bounds[2]]
-					do (x, y) =>
-						name = "level_#{x}x#{y}.png"
-
-						@content.loadImage(name).when (err, img) =>
-							@ctx.drawImage(img, 512*x, 512*-(y + 1))
+			tm = new Game.Tilemap()
+			tm.initialize(this, data)
+			@objects.push(tm)
 
 			for name, obj of data.objects
 				clazz = Game[obj.dataType]
@@ -135,7 +136,7 @@ class TinyGame
 			console.log('objects are ', @objects)
 			join = Futures.join()
 			for obj in @objects
-				join.add obj.loadContent()
+				join.add obj.loadContent(@content)
 			join.when ->
 				future.fulfill()
 		future

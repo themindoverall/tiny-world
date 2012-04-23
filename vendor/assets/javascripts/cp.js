@@ -3928,7 +3928,7 @@ Body.prototype.activate = function()
 
 Body.prototype.activateStatic = function(filter)
 {
-	assert(body.isStatic(this), "Body.activateStatic() called on a non-static body.");
+	assert(this.isStatic(), "Body.activateStatic() called on a non-static body.");
 	
 	for(var arb = this.arbiterList; arb; arb = arb.next(this)){
 		if(!filter || filter == arb.a || filter == arb.b){
@@ -4280,11 +4280,11 @@ Space.prototype.shapeQuery = function(shape, func)
 		
 		var contacts;
 		
-		// Shape 'a' should have the lower shape type. (required by cpCollideShapes() )
+		// Shape 'a' should have the lower shape type. (required by cp.collideShapes() )
 		if(a.collisionCode <= b.collisionCode){
-			contacts = cpCollideShapes(a, b);
+			contacts = cp.collideShapes(a, b);
 		} else {
-			contacts = cpCollideShapes(b, a);
+			contacts = cp.collideShapes(b, a);
 			for(var i=0; i<contacts.length; i++) contacts[i].n = vneg(contacts[i].n);
 		}
 		

@@ -203,8 +203,6 @@ class WallrideState extends PlatformerState
 	execute: (elapsed) ->
 		@owner.body.vy = @owner.WALL_SKID
 
-		console.log("movey ", @owner.controller.movement)
-
 		if (@owner.controller.movement / @side) <= 0
 			@wallTimer += elapsed
 		else
@@ -214,7 +212,6 @@ class WallrideState extends PlatformerState
 			return 'walljump'
 
 		if @wallTimer > @owner.WALL_JUMP_WINDOW or (!@owner.sensors['sl'].result and !@owner.sensors['sr'].result)
-			console.log("walltimer ", @wallTimer, "and", @owner.WALL_JUMP_WINDOW)
 			return 'air'
 
 		if @owner.sensors['bl'].result or @owner.sensors['br'].result
@@ -257,7 +254,7 @@ class WalljumpState extends PlatformerState
 			@owner.bshape.layers |= 0b100
 		else
 			@owner.bshape.layers &= ~0b100
-		
+
 		@jumpTimer -= elapsed
 		if @jumpTimer > 0
 			if @owner.controller.jump != 'up'
@@ -266,14 +263,12 @@ class WalljumpState extends PlatformerState
 				@jumpTimer = 0
 
 		if @jumpTimer <= 0 and @owner.body.vy > 0
-			console.log 'leaving walljump cuz ', @jumpTimer, 'and', @owner.body.vy
 			return 'air'
 
 		sides = (if @owner.sensors['sr'].result then 1 else 0) -
 						(if @owner.sensors['sl'].result then 1 else 0)
 
 		if sides != 0 and @owner.controller.movement != 0 and @owner.controller.movement / sides > 0
-			console.log 'leaving walljump to wr cuz ', sides
 			return 'wallride'
 
 		return null
@@ -315,7 +310,7 @@ class Game.Player extends Game.GameObject
 		@bshape = space.addShape(new cp.CircleShape(@body, bodywidth * 0.5, v(0, 0)))
 		@bshape.setFriction(7)
 		@bshape.group = 1
-		@bshape.layers = 0b1
+		@bshape.layers = 0b1001
 
 		# pivot = space.addBody(new cp.Body(0.0000001, Number.MAX_VALUE))
 
