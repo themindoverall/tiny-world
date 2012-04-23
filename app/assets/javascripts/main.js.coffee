@@ -58,8 +58,8 @@ class TinyGame
 	draw: ->
 		@canvas.width = @canvas.width
 		this.drawGame(@ctx)
-		@debug.width = @debug.width
-		this.drawDebug(@debug_ctx)
+		#@debug.width = @debug.width
+		#this.drawDebug(@debug_ctx)
 		@ui.width = @ui.width
 		this.drawUI(@ui_ctx)
 		#@debugDraw.m_ctx.translate(400, 250)
@@ -116,7 +116,7 @@ class TinyGame
 	add: (obj, data) ->
 		obj.initialize(this, data)
 		@objects.push(obj)
-		obj.loadContent().when ->
+		obj.loadContent(@content).when ->
 			if @started
 				obj.start()
 

@@ -13,6 +13,7 @@ def write_some_data(ctx, filepath):
 	obj = bpy.context.active_object
 	verts = obj.data.vertices
 	d = os.path.dirname(filepath)
+
 	print("Hi world! %s" % filepath)
 	aabb = [100000, 100000, -100000, -100000]
 	diff = [0, 0]
@@ -37,6 +38,11 @@ def write_some_data(ctx, filepath):
 	rnd.resolution_y = diff[1] * 2 * RESO
 	cam.location.x = obj.location.x
 	cam.location.y = obj.location.y
+
+	if obj.parent:
+		cam.location.x += obj.parent.location.x
+		cam.location.y += obj.parent.location.y
+
 	cam.data.ortho_scale = diff[0] * 2
 	rnd.filepath = filepath
 	bpy.ops.object.hide_render_set(unselected = True)

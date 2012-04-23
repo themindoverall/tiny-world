@@ -16,12 +16,12 @@ bl_info = {
 }
 
 from bpy_extras.io_utils import ExportHelper
-from bpy.props import StringProperty, BoolProperty, EnumProperty
+from bpy.props import StringProperty, IntProperty, BoolProperty, EnumProperty
 
 RESO = 16
 CHUNK = 512
 
-def write_some_data(ctx, filepath):
+def write_some_data(ctx, filepath, min_x, min_y, max_x, max_y):
 	cam = bpy.context.scene.camera
 	rnd = bpy.context.scene.render
 	d = os.path.dirname(filepath)
@@ -31,8 +31,8 @@ def write_some_data(ctx, filepath):
 	rnd.resolution_y = CHUNK
 	cam.data.ortho_scale = CHUNK / RESO
 	
-	dmin = [-1, -1]
-	dmax = [0, 0]
+	dmin = [min_x, min_y]
+	dmax = [max_x, max_y]
 	for y in range(dmin[0], dmax[0] + 1):
 		for x in range(dmin[0], dmax[0] + 1):
 			cam.location.x = RESO + x * CHUNK / RESO
@@ -109,12 +109,32 @@ class ExportTinyLevel(bpy.types.Operator, ExportHelper):
 		options = {'HIDDEN'}
 	)
 
+	min_x = bpy.props.IntProperty(
+		name = "Min X",
+		default = -1
+	)
+
+	min_y = bpy.props.IntProperty(
+		name = "Min Y",
+		default = -1
+	)
+
+	max_x = bpy.props.IntProperty(
+		name = "Max X",
+		default = 0
+	)	
+
+	max_y = bpy.props.IntProperty(
+		name = "Max Y",
+		default = 0
+	)
+
 	@classmethod
 	def poll(cls, context):
 		return context.active_object is not None
 
 	def execute(self, context):
-		return write_some_data(context, self.filepath)
+		return write_some_data(context, self.filepath, self.min_x, self.min_y, self.max_x, self.max_y)
 
 #def menu_func_export(self, context):
 #	self.layout.operator(ExportTinyGame.bl_idname, text="Export Tiny Game Operator")

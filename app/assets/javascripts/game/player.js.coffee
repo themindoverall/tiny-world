@@ -1,5 +1,7 @@
 #= require ./player_controller
 
+Futures = require('futures')
+
 v = cp.v
 v.zero = v(0,0)
 
@@ -350,8 +352,16 @@ class Game.Player extends Game.GameObject
 
 		@controller = new Game.PlayerController(game)
 
-		console.log "player is here!  i have body", @body
+		@statetimer = 0
+		@statetimermax = 0.3
 
+		console.log "player is here!  i have body", @body
+	loadContent: (content) ->
+		future = Futures.future()
+		content.loadImage('viking.png').when (err, img) =>
+			@image = img
+			future.fulfill()
+		future
 	update: (elapsed) ->
 		@body.resetForces()
 		@center = @body.local2World(v.zero)
@@ -361,19 +371,25 @@ class Game.Player extends Game.GameObject
 		if @currentState != null
 			@currentState.setupSensors()
 		
+		@statetimer += elapsed
+
 		sensorstate = "State: #{@currentStateName}<br />"
 		sensorstate += "Jump: #{@controller.jump}<br />"
 		sensorstate += "V: #{@body.vx}, #{@body.vy}<br />"
 		for k, s of @sensors
 			s.sense(@body)
 			sensorstate += 'k: ' + k + ' v: ' + s.result + '<br />'
-		$("pre#log").html(sensorstate)
+
+		if @statetimer > @statetimermax
+			$("pre#log").html(sensorstate)
+			@statetimer = 0
 		if @currentState != null
 			this.setState(@currentState.execute(elapsed))
 
 		@controller.update(elapsed)
 	draw: (ctx) ->
-		this
+		if @image
+			ctx.drawImage(@image, @body.p.x * Game.PTM_RATIO - @image.width * 0.5, @body.p.y * Game.PTM_RATIO - @image.height * 0.5)
 	setState: (statename) ->
 		if statename == null or statename == @currentStateName
 			return

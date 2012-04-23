@@ -1,3 +1,5 @@
+Futures = require('futures')
+
 v = cp.v
 v.zero = v(0,0)
 
@@ -25,6 +27,8 @@ class Game.MovingPlatform extends Game.Platform
 		@dir = 1
 		@cur = 1
 
+		@imagename = data.image
+
 		for face in data.faces
 			verts = []
 			for vidx in face
@@ -35,6 +39,12 @@ class Game.MovingPlatform extends Game.Platform
 			shape.setFriction(7)
 			shape.layers = 0b110
 			shape.group = 10
+	loadContent: (content) ->
+		future = Futures.future()
+		content.loadImage(@imagename).when (err, img) =>
+			@image = img
+			future.fulfill()
+		future
 	update: (elapsed) ->
 		curpath = v.add(@origin, @path[@cur])
 		diff = v(curpath.x - @body.p.x, curpath.y - @body.p.y)
@@ -54,4 +64,4 @@ class Game.MovingPlatform extends Game.Platform
 				else # 'loop'
 					@cur = 0
 	draw: (ctx) ->
-		this
+		ctx.drawImage(@image, @body.p.x * Game.PTM_RATIO - @image.width * 0.5, @body.p.y * Game.PTM_RATIO - @image.height * 0.5)
