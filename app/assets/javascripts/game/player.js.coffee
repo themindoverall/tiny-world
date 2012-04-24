@@ -402,8 +402,8 @@ class Game.Player extends Game.GameObject
 				ctx,
 				@anim,
 				@animTime,
-				@body.p.x * Game.PTM_RATIO,
-				@body.p.y * Game.PTM_RATIO,
+				@body.p.x * Game.PTM_RATIO - 3,
+				@body.p.y * Game.PTM_RATIO - 3,
 				@flipX,
 				false
 			)

@@ -38,6 +38,7 @@ class TinyGame
 		
 		@remainder = 0;
 		@objects = []
+		@objectMap = {}
 		this.loadContent('level.json').when =>
 			started = true
 			for obj in @objects
@@ -129,7 +130,12 @@ class TinyGame
 		obj.loadContent(@content).when ->
 			if @started
 				obj.start()
-
+	register: (name, obj) ->
+		@objectMap[name] = obj
+	unregister: (name) ->
+		delete @objectMap[name]
+	get: (name) ->
+		@objectMap[name]
 	loadContent: (name) ->
 		future = Futures.future()
 		@content.loadData(name).when (err, data) =>

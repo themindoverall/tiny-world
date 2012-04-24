@@ -11,6 +11,7 @@ class Game.Trigger extends Game.GameObject
 
 		@checkTime = 0.2
 		@timer = 0
+		@action = data.action
 
 		@occupants = []
 
@@ -52,10 +53,10 @@ class Game.Trigger extends Game.GameObject
 
 	onEnter: (shape) ->
 		console.log 'trigger.on enter', shape
-		@game.dialog.setText("Welcome to my great domain.")
+		Game.Actions[@action].enter(@game, shape) if Game.Actions[@action].enter
 	onInside: (shape) ->
 		console.log 'trigger.on inside'
-		this
+		Game.Actions[@action].inside(@game, shape) if Game.Actions[@action].inside
 	onLeave: (shape) ->
 		console.log 'trigger.on leave'
-		@game.dialog.setText("You will enjoy it here... hahaha.")
+		Game.Actions[@action].exit(@game, shape) if Game.Actions[@action].exit

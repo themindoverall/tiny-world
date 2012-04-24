@@ -40,6 +40,7 @@ class Game.Coin extends Game.GameObject
 
 			@timer = 0
 	unload: () ->
+		super()
 		@game.space.removeShape(@shape)
 	draw: (ctx) ->
 		ctx.drawImage(@image, @pos.x * Game.PTM_RATIO - @image.width * 0.5, @pos.y * Game.PTM_RATIO - @image.height * 0.5)

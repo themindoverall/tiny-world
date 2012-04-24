@@ -21,7 +21,7 @@ from bpy.props import StringProperty, IntProperty, BoolProperty, EnumProperty
 RESO = 16
 CHUNK = 512
 
-def write_some_data(ctx, filepath, min_x, min_y, max_x, max_y):
+def write_some_data(ctx, filepath, do_render, min_x, min_y, max_x, max_y):
 	cam = bpy.context.scene.camera
 	rnd = bpy.context.scene.render
 	d = os.path.dirname(filepath)
@@ -30,16 +30,18 @@ def write_some_data(ctx, filepath, min_x, min_y, max_x, max_y):
 	rnd.resolution_x = CHUNK
 	rnd.resolution_y = CHUNK
 	cam.data.ortho_scale = CHUNK / RESO
-	
+
 	dmin = [min_x, min_y]
 	dmax = [max_x, max_y]
-	for y in range(dmin[0], dmax[0] + 1):
-		for x in range(dmin[0], dmax[0] + 1):
-			cam.location.x = RESO + x * CHUNK / RESO
-			cam.location.y = RESO + y * CHUNK / RESO
-			rnd.filepath = os.path.join(d, "%s_%dx%d" % (f, x, y))
-			bpy.ops.render.render(write_still = True)
-			print("Wrote image at %dx%d" % (x, y))
+	
+	if do_render:
+		for y in range(dmin[0], dmax[0] + 1):
+			for x in range(dmin[0], dmax[0] + 1):
+				cam.location.x = RESO + x * CHUNK / RESO
+				cam.location.y = RESO + y * CHUNK / RESO
+				rnd.filepath = os.path.join(d, "%s_%dx%d" % (f, x, y))
+				bpy.ops.render.render(write_still = True)
+				print("Wrote image at %dx%d" % (x, y))
 
 	write_json(ctx, filepath, dmin, dmax)
 
@@ -109,6 +111,11 @@ class ExportTinyLevel(bpy.types.Operator, ExportHelper):
 		options = {'HIDDEN'}
 	)
 
+	do_render = bpy.props.BoolProperty(
+		name = "Render",
+		default = True
+	)
+
 	min_x = bpy.props.IntProperty(
 		name = "Min X",
 		default = -1
@@ -134,7 +141,7 @@ class ExportTinyLevel(bpy.types.Operator, ExportHelper):
 		return context.active_object is not None
 
 	def execute(self, context):
-		return write_some_data(context, self.filepath, self.min_x, self.min_y, self.max_x, self.max_y)
+		return write_some_data(context, self.filepath, self.do_render, self.min_x, self.min_y, self.max_x, self.max_y)
 
 #def menu_func_export(self, context):
 #	self.layout.operator(ExportTinyGame.bl_idname, text="Export Tiny Game Operator")
