@@ -9,6 +9,7 @@ class Game.GameObject
 		if @data.name
 			@game.register(@data.name, this)
 			@name = @data.name
+		@layer = 0
 		this
 	unload: () ->
 		@game.unregister(@name) if @name

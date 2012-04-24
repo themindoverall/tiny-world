@@ -24,7 +24,7 @@ class Game.MovingPlatform extends Game.Platform
 		
 		@body.setPos(v(pos[0], -pos[1]))
 		@path = (v(p[0], -p[1]) for p in data.path)
-		@speed = data.speed or 10
+		@speed = data.speed or 1
 		@method = data.method or "pingpong"
 		@dir = 1
 		@cur = 1

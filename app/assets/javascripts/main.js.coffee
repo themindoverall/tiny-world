@@ -60,7 +60,7 @@ class TinyGame
 			obj.unload()
 			@objects.splice(@objects.indexOf(obj), 1)
 
-		#@debugDraw.m_ctx.translate(400, 250)
+		@dialog.update(elapsed)
 		
 		@remainder += elapsed
 		while @remainder > 1/60
@@ -73,11 +73,9 @@ class TinyGame
 		#this.drawDebug(@debug_ctx)
 		@ui.width = @ui.width
 		this.drawUI(@ui_ctx)
-		#@debugDraw.m_ctx.translate(400, 250)
-		#@world.DrawDebugData()
 	offset: () ->
-		x: -window.player.body.p.x * Game.PTM_RATIO + @canvas.width * 0.5
-		y: -window.player.body.p.y * Game.PTM_RATIO + @canvas.height * 0.5
+		x: -@player.body.p.x * Game.PTM_RATIO + @canvas.width * 0.5
+		y: -@player.body.p.y * Game.PTM_RATIO + @canvas.height * 0.5
 	drawGame: (ctx) ->
 		offset = this.offset()
 		@ctx.translate offset.x, offset.y
@@ -127,6 +125,7 @@ class TinyGame
 	add: (obj, data) ->
 		obj.initialize(this, data)
 		@objects.push(obj)
+		this.sortObjects()
 		obj.loadContent(@content).when ->
 			if @started
 				obj.start()
@@ -136,6 +135,9 @@ class TinyGame
 		delete @objectMap[name]
 	get: (name) ->
 		@objectMap[name]
+	sortObjects: () ->
+		@objects.sort (a,b) ->
+			a.layer - b.layer
 	loadContent: (name) ->
 		future = Futures.future()
 		@content.loadData(name).when (err, data) =>
@@ -149,6 +151,7 @@ class TinyGame
 					o = new clazz()
 					o.initialize(this, obj)
 					@objects.push(o)
+			this.sortObjects()
 			console.log('objects are ', @objects)
 			join = Futures.join()
 			for obj in @objects

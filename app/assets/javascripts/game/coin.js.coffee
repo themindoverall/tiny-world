@@ -18,7 +18,7 @@ class Game.Coin extends Game.GameObject
 		@shape = space.addShape(new cp.CircleShape(space.staticBody, 0.5, @pos))
 		@shape.sensor = true
 		@shape.group = 2
-		@shape.layers = 0b1000
+		@shape.layers = 0b0
 		@dead = false
 	loadContent: (content) ->
 		future = Futures.future()
@@ -33,8 +33,10 @@ class Game.Coin extends Game.GameObject
 		@timer += elapsed
 		if @timer > @checkTime
 			space = @game.space
+			@shape.layers = 0b10000
 			space.shapeQuery @shape, (other, contacts) =>
 				@dead = true
+			@shape.layers = 0b0
 			if @dead
 				console.log 'coin collected!'
 

@@ -279,7 +279,7 @@ class WalljumpState extends PlatformerState
 class Game.Player extends Game.GameObject
 	JUMP_BONUS: 0.6
 	RUN_SPEED: 18.0
-	JUMP_SPEED: 80.0
+	JUMP_SPEED: 72.0
 	AIR_SPEED: 100.0
 	AIR_DRAG: 12.0
 	AIR_AGILITY: 80.0
@@ -290,7 +290,7 @@ class Game.Player extends Game.GameObject
 	initialize: (game, data) ->
 		super(game, data)
 
-		window.player = this
+		game.player = this
 
 		@currentState = null
 
@@ -313,7 +313,7 @@ class Game.Player extends Game.GameObject
 		@bshape = space.addShape(new cp.CircleShape(@body, bodywidth * 0.5, v(0, 0)))
 		@bshape.setFriction(7)
 		@bshape.group = 1
-		@bshape.layers = 0b1001
+		@bshape.layers = 0b11001
 
 		# pivot = space.addBody(new cp.Body(0.0000001, Number.MAX_VALUE))
 

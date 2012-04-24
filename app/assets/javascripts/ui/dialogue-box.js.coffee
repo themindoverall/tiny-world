@@ -15,14 +15,21 @@ class Game.UI.DialogueBox extends Game.UI.Box
     @align = DialogueBox.ALIGN.LEFT
     @maxSize = [@border.width, @border.height]
     @text = text
+    @showTime = 0
     @loaded = false
   loadContent: (content) ->
     this._loadStyles(content).when =>
       this.setText(@text)
       @loaded = true
   draw: (rect, ctx) ->
-    if @loaded
+    if @loaded and @showTime > 0
+      if @showTime < 0.5
+        ctx.globalAlpha = @showTime / 0.5
       ctx.drawImage(@cached, rect.x, rect.y, @border.width, @border.height)
+      ctx.globalAlpha = 1.0
+  update: (elapsed) ->
+    if @showTime > 0
+      @showTime -= elapsed
   drawBox: (rect, ctx) ->
     x = rect.x
     y = rect.y
@@ -68,6 +75,9 @@ class Game.UI.DialogueBox extends Game.UI.Box
             if c isnt 10
               x += @styles[stack[0]].drawChar(ctx, c, x, y)
 
+  say: (text, time) ->
+    this.setText(text)
+    @showTime = time + 0.5
   setText: (text) ->
     @text = text
     @compiled = this._compileText(text)
